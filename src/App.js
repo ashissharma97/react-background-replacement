@@ -1,5 +1,6 @@
 import React, { useRef, useEffect,  } from 'react';
 import { init, predict } from './processStream';
+import bgimg from './bg.jpg';
 
 function App() {
   const video = useRef();
@@ -12,7 +13,7 @@ function App() {
       v.srcObject = stream;
       v.play();
     },
-    e => console.log(e)); 
+    e => console.log(e));
   },[video]);
 
   useEffect(() => {
@@ -23,10 +24,14 @@ function App() {
   return (
     <div className="container">
       <h1>Image Segementation</h1>
-      <video muted id="video" ref={video} autoPlay></video>
-      <button onClick={()=> predict(true) }>Add Background</button>
-      <canvas ref={output}/>
-      <img ref={bg} src="../public/bg.jpg"></img>
+      <div className="col">
+        <video className="video" muted ref={video} autoPlay></video>
+      </div>
+      <div className="col">
+        <canvas ref={output}/>
+      </div>
+      <img className="hidden" alt="Img" ref={bg} src={bgimg}></img>
+      <button onClick={()=> {predict(true,output); video.current.className = 'hidden'; } }>Add Background</button>
     </div>
   );
 }

@@ -8,7 +8,6 @@ export async function init(ref, bg) {
     model = await loadModel();
     bgim = loadBackground(bg);
     cam = await tf.data.webcam(ref.current);
-    const screenShot = await cam.capture();
     const pred = model.predict(tf.zeros([1, 128, 128, 3]).toFloat());
 
     const readable_output = pred.dataSync();
@@ -16,7 +15,6 @@ export async function init(ref, bg) {
     console.log(model.summary());
 
     pred.dispose();
-    screenShot.dispose();
 }
 
 function refine(mask) {
@@ -114,7 +112,7 @@ const model = await tf.loadLayersModel("http://localhost:5000/model.json");
 return model;
 }
 
-export async function predict(isPredicting) {
+export async function predict(isPredicting,canvas) {
     while (isPredicting) {
         const img =  await getImage();
         const resize = img.resizeBilinear([128, 128]);
@@ -128,7 +126,7 @@ export async function predict(isPredicting) {
       
         const blend = process(img, cst);
         
-        await tf.browser.toPixels();
+        await tf.browser.toPixels(blend, canvas.current);
        
         blend.dispose();
         resize.dispose();
