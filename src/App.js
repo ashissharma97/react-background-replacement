@@ -1,23 +1,32 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useRef, useEffect,  } from 'react';
+import { init, predict } from './processStream';
 
 function App() {
+  const video = useRef();
+  const output = useRef();
+  const bg = useRef();
+
+  useEffect(() => {
+    navigator.getUserMedia({video: true, audio:true}, stream =>{
+      let v =  video.current;
+      v.srcObject = stream;
+      v.play();
+    },
+    e => console.log(e)); 
+  },[video]);
+
+  useEffect(() => {
+    init(video , bg);
+    // eslint-disable-next-line
+  },[])
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="container">
+      <h1>Image Segementation</h1>
+      <video muted id="video" ref={video} autoPlay></video>
+      <button onClick={()=> predict(true) }>Add Background</button>
+      <canvas ref={output}/>
+      <img ref={bg} src="../public/bg.jpg"></img>
     </div>
   );
 }
