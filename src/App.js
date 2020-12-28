@@ -4,8 +4,6 @@ import bgimg from './bg.jpg';
 
 function App() {
   const video = useRef();
-  const output = useRef();
-  const bg = useRef();
 
   useEffect(() => {
     navigator.getUserMedia({video: true, audio:true}, stream =>{
@@ -17,21 +15,18 @@ function App() {
   },[video]);
 
   useEffect(() => {
-    init(video , bg);
+    init();
     // eslint-disable-next-line
   },[])
 
   return (
     <div className="container">
       <h1>Image Segementation</h1>
-      <div className="col">
-        <video className="video" muted ref={video} autoPlay></video>
-      </div>
-      <div className="col">
-        <canvas ref={output}/>
-      </div>
-      <img className="hidden" alt="Img" ref={bg} src={bgimg}></img>
-      <button onClick={()=> {predict(true,output); video.current.className = 'hidden'; } }>Add Background</button>
+      <video className="video" ref={video} muted id="video" autoPlay></video>
+      <canvas className="hidden" id="canvas" />
+      <img className="hidden" alt="Img" id="image" src={bgimg}></img>
+      <button onClick={()=> {predict(true); video.current.className = 'hidden'; } }>Add Background</button>
+      <video id="output" autoPlay />
     </div>
   );
 }

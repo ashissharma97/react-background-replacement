@@ -4,16 +4,11 @@ let cam;
 let bgim;
 let model;
 
-export async function init(ref, bg) {
+export async function init() {
     model = await loadModel();
-    bgim = loadBackground(bg);
-    cam = await tf.data.webcam(ref.current);
+    bgim = loadBackground(document.getElementById('image'));
+    cam = await tf.data.webcam(document.getElementById('video'));
     const pred = model.predict(tf.zeros([1, 128, 128, 3]).toFloat());
-
-    const readable_output = pred.dataSync();
-    console.log(readable_output);
-    console.log(model.summary());
-
     pred.dispose();
 }
 
@@ -55,14 +50,11 @@ function smoothstep(x) {
 
     const smooth_out = tf.tidy(() => {
     
-     // Define the left and right edges 
      const edge0 = tf.scalar(0.3);
      const edge1 = tf.scalar(0.5);
     
-     // Scale, bias and saturate x to 0..1 range
      const z = tf.clipByValue(x.sub(edge0).div(edge1.sub(edge0)), 0.0, 1.0);
      
-     //Evaluate polynomial  z * z * (3 - 2 * x)
      return tf.square(z).mul(tf.scalar(3).sub(z.mul(tf.scalar(2))));
     
     });
@@ -86,21 +78,8 @@ export function process(image, mask) {
     
 }
 
-export default function drawDefault(ref) {
-    const ctx = ref.getContext('2d');
-    const defImg = new Image();
-    defImg.crossOrigin = "anonymous";
-    defImg.src = "bg.jpg";
-
-    defImg.onload = function () {
-        ref.style.width = defImg.width;
-        ref.style.height = defImg.height;
-        ctx.drawImage(defImg, 0, 0,defImg.width,defImg.height,0,0,300,300);
-    }
-}
-
 function loadBackground(bg) {   
-    const bim = tf.browser.fromPixels(bg.current);
+    const bim = tf.browser.fromPixels(bg);
     const img = tf.image.resizeBilinear(bim, [300, 300]).div(tf.scalar(255.0));
     bim.dispose();
     return img;
@@ -112,7 +91,12 @@ const model = await tf.loadLayersModel("http://localhost:5000/model.json");
 return model;
 }
 
-export async function predict(isPredicting,canvas) {
+export async function predict(isPredicting) {
+    let canvas = document.getElementById('canvas');
+    let outputVideo = document.getElementById('output');
+    let stream = canvas.captureStream(25);
+    outputVideo.srcObject = stream;
+
     while (isPredicting) {
         const img =  await getImage();
         const resize = img.resizeBilinear([128, 128]);
@@ -123,11 +107,9 @@ export async function predict(isPredicting,canvas) {
         const thresh = tf.scalar(0.5);
         const msk = out.greater(thresh);
         const cst = tf.cast(msk,'float32');
-      
         const blend = process(img, cst);
-        
-        await tf.browser.toPixels(blend, canvas.current);
-       
+        await tf.browser.toPixels(blend, canvas);
+
         blend.dispose();
         resize.dispose();
         msk.dispose();
